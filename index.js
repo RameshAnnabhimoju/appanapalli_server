@@ -30,3 +30,4 @@ app.get("/", (request, response) => {
 app.use("/donation", donationRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+export default app;
