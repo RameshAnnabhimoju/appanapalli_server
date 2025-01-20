@@ -13,10 +13,19 @@ const donationSchema = new Schema(
     in_behalf_of: { type: String },
     amount: { type: Number },
     booked_on: { type: Date },
-    id_prood_type: { type: String },
+    id_proof_type: { type: String },
     id_proof_number: { type: String },
-    ocassion: { type: String },
+    occasion: { type: String },
     email: { type: String },
+    gothram: { type: String },
+    id_proof: { type: String },
+    pincode: { type: String },
+    state: { type: String },
+    country: { type: String },
+    paksham: { type: String },
+    telugu_month: { type: String },
+    sub_tidi: { type: String },
+    payment_mode: { type: String }
   },
   { timestamps: true }
 );

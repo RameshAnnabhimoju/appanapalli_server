@@ -143,22 +143,25 @@ export const getDonations = (request, response) => {
     }
     const limitStep = parseInt(limit, 10) || 10;
     const skipStep = parseInt(page, 10) - 1 || 0 * limitStep;
-    console.log(startDate, endDate);
-    donation
-      ?.find({ ...rest })
-      .skip(skipStep)
-      .limit(limitStep)
-      .then((data) => {
-        if (Object.keys(data)?.length === 0) {
+    const filter = { ...rest, booked_on: { ...(fromDate && { $gte: fromDate }), ...(toDate && { $lte: toDate }) } };
+
+    Promise.all([
+      donation.countDocuments(filter),
+      donation.find(filter).skip(skipStep).limit(limitStep)
+    ])
+      .then(([totalCount, data]) => {
+        if (data.length === 0 || totalCount === 0) {
           return response.status(200).json({
             message: "no donations exist",
             data,
+            totalCount,
             type: "fail",
           });
         }
         return response.status(200).json({
-          message: "donation fetched sucessfully",
+          message: "donation fetched successfully",
           data,
+          totalCount,
           type: "success",
         });
       })
