@@ -1,6 +1,9 @@
 import donation from "../models/donation.model.js";
 import xlsx from "xlsx";
 import { getEndDate, getStartDate } from "../utils/dateUtils.js";
+
+
+
 export const addMultipleDonations = (request, response) => {
   try {
     const workbook = xlsx.read(request?.file?.buffer, {
@@ -91,43 +94,143 @@ export const updateMultipleDonations = (request, response) => {
   }
 };
 
-export const updateDonation = (request, response) => {
+// export const updateDonation = (request, response) => {
+//   try {
+//     const {
+//       body,
+//       body: { booking_id },
+//     } = request;
+//     if (!booking_id) {
+//       return response.status(400).json({
+//         message: "invalid booking_id, please send avalid booking_id",
+//         type: "fail",
+//       });
+//     }
+//     donation
+//       ?.findOneAndUpdate(booking_id, body)
+//       .then((data) => {
+//         return response.status(200).json({
+//           message: "donation fetched sucessfully",
+//           data,
+//           type: "success",
+//         });
+//       })
+//       .catch((error) => {
+//         return response.status(400).json({
+//           error: error.message,
+//           message: "error updating donation",
+//           type: "fail",
+//         });
+//       });
+//   } catch (error) {
+//     console.log("[add donation error] ", error);
+//     return response.status(400).json({
+//       error: error.message,
+//       message: "something went wrong, please try again!",
+//       type: "fail",
+//     });
+//   }
+// };
+// export const addDonation = (request, response) => {
+//   try {
+//     const { body } = request;
+//     if (body?.performance_date) {
+//       body.performance_date = new Date(body.performance_date);
+//     }
+//     if (body?.booked_on) {
+//       body.booked_on = new Date(body?.booked_on);
+//     }
+//     donation
+//       .create(body)
+//       .then((data) => {
+//         return response.status(200).json({
+//           message: "donation added successfully",
+//           data,
+//           type: "success",
+//         });
+//       })
+//       .catch((error) => {
+//         return response.status(400).json({
+//           error: error.message,
+//           message: "error adding donation",
+//           type: "fail",
+//         });
+//       });
+//   } catch (error) {
+//     console.log("[add donation error] ", error);
+//     return response.status(400).json({
+//       error: error.message,
+//       message: "something went wrong, please try again!",
+//       type: "fail",
+//     });
+//   }
+// };
+
+export const manageDonation = (request, response) => {
   try {
-    const {
-      body,
-      body: { booking_id },
-    } = request;
-    if (!booking_id) {
-      return response.status(400).json({
-        message: "invalid booking_id, please send avalid booking_id",
-        type: "fail",
-      });
+    const { body, body: { _id } } = request;
+
+    // Convert dates to `Date` objects if present
+    if (body?.performance_date) {
+      body.performance_date = new Date(body.performance_date);
     }
-    donation
-      ?.findOneAndUpdate(booking_id, body)
-      .then((data) => {
-        return response.status(200).json({
-          message: "donation fetched sucessfully",
-          data,
-          type: "success",
+    if (body?.booked_on) {
+      body.booked_on = new Date(body?.booked_on);
+    }
+
+    // If `id` is provided, attempt to update the existing donation
+    if (_id) {
+      donation
+        .findOneAndUpdate({ _id }, body, { new: true }) // `{ new: true }` returns the updated document
+        .then((data) => {
+          if (!data) {
+            return response.status(404).json({
+              message: "Donation not found for the given id",
+              type: "fail",
+            });
+          }
+          return response.status(200).json({
+            message: "Donation updated successfully",
+            data,
+            type: "success",
+          });
+        })
+        .catch((error) => {
+          return response.status(400).json({
+            error: error.message,
+            message: "Error updating donation",
+            type: "fail",
+          });
         });
-      })
-      .catch((error) => {
-        return response.status(400).json({
-          error: error.message,
-          message: "error updating donation",
-          type: "fail",
+    } else {
+      // If no `id`, create a new donation
+      donation
+        .create(body)
+        .then((data) => {
+          return response.status(200).json({
+            message: "Donation added successfully",
+            data,
+            type: "success",
+          });
+        })
+        .catch((error) => {
+          return response.status(400).json({
+            error: error.message,
+            message: "Error adding donation",
+            type: "fail",
+          });
         });
-      });
+    }
   } catch (error) {
-    console.log("[add donation error] ", error);
+    console.log("[manageDonation error] ", error);
     return response.status(400).json({
       error: error.message,
-      message: "something went wrong, please try again!",
+      message: "Something went wrong, please try again!",
       type: "fail",
     });
   }
 };
+
 
 export const getDonations = (request, response) => {
   try {
