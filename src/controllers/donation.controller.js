@@ -234,19 +234,30 @@ export const downloadExcel = (request, response) => {
           Phone: item.phone,
           Address: item.address,
           Donation: item.donation,
-          "Performance Date": item.performance_date?.toISOString().split("T")[0],
+          "Performance Date": item.performance_date
+            ? item.performance_date.toISOString().split("T")[0]
+            : null,
           "Transaction ID": item.transaction_id,
           "Serial No": item.serial_no,
           "Booking ID": item.booking_id,
           "In Behalf Of": item.in_behalf_of,
           Amount: item.amount,
-          "Booked On": item.booked_on?.toISOString().split("T")[0],
+          "Booked On": item.booked_on
+            ? item.booked_on.toISOString().split("T")[0]
+            : null,
           Email: item.email,
           Gothram: item.gothram,
           Pincode: item.pincode,
           State: item.state,
           Country: item.country,
           "Payment Mode": item.payment_mode,
+          "ID Proof Type": item.id_proof_type,
+          "ID Proof Number": item.id_proof_number,
+          Occasion: item.occasion,
+          "ID Proof": item.id_proof,
+          Paksham: item.paksham,
+          "Telugu Month": item.telugu_month,
+          "Sub Tidi": item.sub_tidi,
         }));
 
         // Create an Excel sheet and workbook
@@ -271,6 +282,13 @@ export const downloadExcel = (request, response) => {
           { wch: 15 }, // State
           { wch: 15 }, // Country
           { wch: 15 }, // Payment Mode
+          { wch: 15 }, // ID Proof Type
+          { wch: 15 }, // ID Proof Number
+          { wch: 15 }, // Occasion
+          { wch: 15 }, // ID Proof
+          { wch: 15 }, // Paksham
+          { wch: 15 }, // Telugu Month
+          { wch: 15 }, // Sub Tidi
         ];
         const workbook = xlsx.utils.book_new();
         xlsx.utils.book_append_sheet(workbook, worksheet, "Donations");
