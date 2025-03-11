@@ -24,15 +24,13 @@ export const manageMultipleDonations = async (request, response) => {
 
     // Transform data before inserting/updating
     const preparedJsonData = jsonData.map((data) => {
-      const performanceDateValue = new Date(data["Performance Date"]);
-      const isInvalidDate = !isNaN(performanceDateValue.getTime());
       return {
         booking_id: data['Booking ID'] || new mongoose.Types.ObjectId(),
         devotee: data.Devotee || null,
         phone: data.Phone || null,
         address: data.Address || null,
         donation: data.Donation || null,
-        performance_date: data["Performance Date"] && isInvalidDate ? performanceDateValue : null,
+        performance_date: data["Performance Date"] ? new Date(data["Performance Date"]) : null,
         transaction_id: data["Transaction ID"] || null,
         recept_no: data["Recept No"] || null,
         booked_on: data["Booked On"] ? new Date(data["Booked On"]) : null,
@@ -51,9 +49,9 @@ export const manageMultipleDonations = async (request, response) => {
         id_proof_number: data["ID Proof Number"] || null,
         occasion: data.Occasion || null,
         id_proof: data["ID Proof"] || null,
-        paksham: data.Paksham || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[1],
-        telugu_month: data["Telugu Month"] || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[0],
-        tidi: data["Tidi"] || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[2],
+        paksham: data.Paksham || null,
+        telugu_month: data["Telugu Month"] || null,
+        tidi: data["Tidi"] || null,
       }
     });
 
@@ -162,7 +160,7 @@ export const getDonations = (request, response) => {
       });
     }
     const limitStep = parseInt(limit, 10) || 10;
-    const skipStep = parseInt(page, 10) - 1 || 0 * limitStep;
+    const skipStep = ((parseInt(page, 10) - 1) || 0) * limitStep;
     // Apply filtering for both "booked_on" and "performance_date"
     const dateFilter = {};
     if (fromDate) dateFilter.$gte = startDate;
