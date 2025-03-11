@@ -31,13 +31,16 @@ export const manageMultipleDonations = async (request, response) => {
       donation: data.Donation || null,
       performance_date: data["Performance Date"] ? new Date(data["Performance Date"]) : null,
       transaction_id: data["Transaction ID"] || null,
-      serial_no: data["Serial No"] || null,
+      recept_no: data["Recept No"] || null,
       booked_on: data["Booked On"] ? new Date(data["Booked On"]) : null,
       email: data.Email || null,
       gothram: data.Gothram || null,
       pincode: data.Pincode || null,
       state: data.State || null,
+      city: data.City || null,
       country: data.Country || null,
+      district: data.District || null,
+      region: data.Region || null,
       payment_mode: data["Payment Mode"] || null,
       in_behalf_of: data["In Behalf Of"] || null,
       amount: data.Amount ? Number(data.Amount) : null,
@@ -47,7 +50,7 @@ export const manageMultipleDonations = async (request, response) => {
       id_proof: data["ID Proof"] || null,
       paksham: data.Paksham || null,
       telugu_month: data["Telugu Month"] || null,
-      sub_tidi: data["Sub Tidi"] || null,
+      tidi: data["Tidi"] || null,
     }));
 
     // console.log("Transformed Data Before Insert:", preparedJsonData); // Debugging
@@ -60,7 +63,7 @@ export const manageMultipleDonations = async (request, response) => {
       },
     }));
 
-    await donation.bulkWrite(bulkOperations, { ordered: false });
+    await donation.bulkWrite(bulkOperations, { ordered: true });
 
     return response.status(200).json({
       message: "Donations managed successfully (added or updated)",

@@ -8,7 +8,7 @@ const donationSchema = new Schema(
     donation: { type: String },
     performance_date: { type: Date },
     transaction_id: { type: String },
-    serial_no: { type: String },
+    recept_no: { type: String },
     booking_id: { type: String },
     in_behalf_of: { type: String },
     amount: { type: Number },
@@ -21,10 +21,13 @@ const donationSchema = new Schema(
     id_proof: { type: String },
     pincode: { type: String },
     state: { type: String },
+    city: { type: String },
+    district: { type: String },
+    region: { type: String },
     country: { type: String },
     paksham: { type: String },
     telugu_month: { type: String },
-    sub_tidi: { type: String },
+    tidi: { type: String },
     payment_mode: { type: String }
   },
   { timestamps: true }
