@@ -4,6 +4,7 @@ import cors from "cors";
 import donationRouter from "./src/routes/donation.router.js";
 import userRouter from "./src/routes/user.router.js";
 import authRouter from "./src/routes/auth.router.js";
+import pincodeRouter from "./src/routes/pincode.router.js";
 import { appConfig } from "./src/configs/appConfig.js";
 const { PORT, MONGO_URL } = appConfig;
 const app = express();
@@ -30,4 +31,5 @@ app.get("/", (request, response) => {
 app.use("/donation", donationRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/pincode", pincodeRouter);
 export default app;

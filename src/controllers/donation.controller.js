@@ -23,35 +23,39 @@ export const manageMultipleDonations = async (request, response) => {
     }
 
     // Transform data before inserting/updating
-    const preparedJsonData = jsonData.map((data) => ({
-      booking_id: data['Booking ID'] || new mongoose.Types.ObjectId(),
-      devotee: data.Devotee || null,
-      phone: data.Phone || null,
-      address: data.Address || null,
-      donation: data.Donation || null,
-      performance_date: data["Performance Date"] ? new Date(data["Performance Date"]) : null,
-      transaction_id: data["Transaction ID"] || null,
-      recept_no: data["Recept No"] || null,
-      booked_on: data["Booked On"] ? new Date(data["Booked On"]) : null,
-      email: data.Email || null,
-      gothram: data.Gothram || null,
-      pincode: data.Pincode || null,
-      state: data.State || null,
-      city: data.City || null,
-      country: data.Country || null,
-      district: data.District || null,
-      region: data.Region || null,
-      payment_mode: data["Payment Mode"] || null,
-      in_behalf_of: data["In Behalf Of"] || null,
-      amount: data.Amount ? Number(data.Amount) : null,
-      id_proof_type: data["ID Proof Type"] || null,
-      id_proof_number: data["ID Proof Number"] || null,
-      occasion: data.Occasion || null,
-      id_proof: data["ID Proof"] || null,
-      paksham: data.Paksham || null,
-      telugu_month: data["Telugu Month"] || null,
-      tidi: data["Tidi"] || null,
-    }));
+    const preparedJsonData = jsonData.map((data) => {
+      const performanceDateValue = new Date(data["Performance Date"]);
+      const isInvalidDate = !isNaN(performanceDateValue.getTime());
+      return {
+        booking_id: data['Booking ID'] || new mongoose.Types.ObjectId(),
+        devotee: data.Devotee || null,
+        phone: data.Phone || null,
+        address: data.Address || null,
+        donation: data.Donation || null,
+        performance_date: data["Performance Date"] && isInvalidDate ? performanceDateValue : null,
+        transaction_id: data["Transaction ID"] || null,
+        recept_no: data["Recept No"] || null,
+        booked_on: data["Booked On"] ? new Date(data["Booked On"]) : null,
+        email: data.Email || null,
+        gothram: data.Gothram || null,
+        pincode: data.Pincode || null,
+        state: data.State || null,
+        city: data.City || null,
+        country: data.Country || null,
+        district: data.District || null,
+        region: data.Region || null,
+        payment_mode: data["Payment Mode"] || null,
+        in_behalf_of: data["In Behalf Of"] || null,
+        amount: data.Amount ? Number(data.Amount) : null,
+        id_proof_type: data["ID Proof Type"] || null,
+        id_proof_number: data["ID Proof Number"] || null,
+        occasion: data.Occasion || null,
+        id_proof: data["ID Proof"] || null,
+        paksham: data.Paksham || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[1],
+        telugu_month: data["Telugu Month"] || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[0],
+        tidi: data["Tidi"] || data["Performance Date"] && isInvalidDate ? null : data["Performance Date"].split(" ")[2],
+      }
+    });
 
     // console.log("Transformed Data Before Insert:", preparedJsonData); // Debugging
 
@@ -147,7 +151,7 @@ export const manageDonation = (request, response) => {
 
 export const getDonations = (request, response) => {
   try {
-    const { page, limit, fromDate, toDate, ...rest } = request.query;
+    const { page, limit, fromDate, toDate, sortBy = "booked_on", ...rest } = request.query;
     const startDate = new Date(getStartDate(fromDate));
     const endDate = new Date(getEndDate(toDate));
     if (startDate > endDate) {
@@ -159,11 +163,25 @@ export const getDonations = (request, response) => {
     }
     const limitStep = parseInt(limit, 10) || 10;
     const skipStep = parseInt(page, 10) - 1 || 0 * limitStep;
-    const filter = { ...rest, booked_on: { ...(fromDate && { $gte: fromDate }), ...(toDate && { $lte: toDate }) } };
+    // Apply filtering for both "booked_on" and "performance_date"
+    const dateFilter = {};
+    if (fromDate) dateFilter.$gte = startDate;
+    if (toDate) dateFilter.$lte = endDate;
+
+    const filter = {
+      ...rest,
+      [sortBy]: dateFilter
+    };
+    // const filter = { ...rest, booked_on: { ...(fromDate && { $gte: fromDate }), ...(toDate && { $lte: toDate }) } };
+
+    // Sorting logic with default descending order
+    const sortField = ["booked_on", "performance_date"].includes(sortBy) ? sortBy : "booked_on";
+    const sortDirection = -1; // Default is -1 (desc)
+    const sort = { [sortField]: sortDirection };
 
     Promise.all([
       donation.countDocuments(filter),
-      donation.find(filter).skip(skipStep).limit(limitStep)
+      donation.find(filter).sort(sort).skip(skipStep).limit(limitStep)
     ])
       .then(([totalCount, data]) => {
         if (data.length === 0 || totalCount === 0) {
@@ -241,7 +259,7 @@ export const downloadExcel = (request, response) => {
             ? item.performance_date.toISOString().split("T")[0]
             : null,
           "Transaction ID": item.transaction_id,
-          "Serial No": item.serial_no,
+          "Recept No": item.recept_no,
           "Booking ID": item.booking_id,
           "In Behalf Of": item.in_behalf_of,
           Amount: item.amount,
@@ -252,6 +270,9 @@ export const downloadExcel = (request, response) => {
           Gothram: item.gothram,
           Pincode: item.pincode,
           State: item.state,
+          City: item.city,
+          Region: item.region,
+          District: item.district,
           Country: item.country,
           "Payment Mode": item.payment_mode,
           "ID Proof Type": item.id_proof_type,
@@ -283,6 +304,9 @@ export const downloadExcel = (request, response) => {
           { wch: 20 }, // Gothram
           { wch: 10 }, // Pincode
           { wch: 15 }, // State
+          { wch: 15 }, // City
+          { wch: 15 }, // Region
+          { wch: 15 }, // District
           { wch: 15 }, // Country
           { wch: 15 }, // Payment Mode
           { wch: 15 }, // ID Proof Type
@@ -291,7 +315,7 @@ export const downloadExcel = (request, response) => {
           { wch: 15 }, // ID Proof
           { wch: 15 }, // Paksham
           { wch: 15 }, // Telugu Month
-          { wch: 15 }, // Sub Tidi
+          { wch: 15 }, // Tidi
         ];
         const workbook = xlsx.utils.book_new();
         xlsx.utils.book_append_sheet(workbook, worksheet, "Donations");
@@ -320,4 +344,5 @@ export const downloadExcel = (request, response) => {
     });
   }
 };
+
 
