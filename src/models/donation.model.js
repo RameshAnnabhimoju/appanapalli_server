@@ -7,18 +7,13 @@ const donationSchema = new Schema(
     address: { type: String },
     donation: { type: String },
     performance_date: { type: Date },
-    transaction_id: { type: String },
-    recept_no: { type: String },
-    booking_id: { type: String },
+    recept_no: { type: String, unique: true, required: true, dropDups: true, sparse: true },
     in_behalf_of: { type: String },
     amount: { type: Number },
     booked_on: { type: Date },
-    id_proof_type: { type: String },
-    id_proof_number: { type: String },
     occasion: { type: String },
     email: { type: String },
     gothram: { type: String },
-    id_proof: { type: String },
     pincode: { type: String },
     state: { type: String },
     city: { type: String },
@@ -28,7 +23,6 @@ const donationSchema = new Schema(
     paksham: { type: String },
     telugu_month: { type: String },
     tidi: { type: String },
-    payment_mode: { type: String }
   },
   { timestamps: true }
 );

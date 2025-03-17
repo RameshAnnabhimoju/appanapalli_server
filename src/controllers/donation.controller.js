@@ -1,7 +1,6 @@
 import donation from "../models/donation.model.js";
 import xlsx from "xlsx";
 import { getEndDate, getStartDate } from "../utils/dateUtils.js";
-import mongoose from "mongoose";
 
 export const manageMultipleDonations = async (request, response) => {
   try {
@@ -25,13 +24,11 @@ export const manageMultipleDonations = async (request, response) => {
     // Transform data before inserting/updating
     const preparedJsonData = jsonData.map((data) => {
       return {
-        booking_id: data['Booking ID'] || new mongoose.Types.ObjectId(),
         devotee: data.Devotee || null,
         phone: data.Phone || null,
         address: data.Address || null,
         donation: data.Donation || null,
         performance_date: data["Performance Date"] ? new Date(data["Performance Date"]) : null,
-        transaction_id: data["Transaction ID"] || null,
         recept_no: data["Recept No"] || null,
         booked_on: data["Booked On"] ? new Date(data["Booked On"]) : null,
         email: data.Email || null,
@@ -42,13 +39,9 @@ export const manageMultipleDonations = async (request, response) => {
         country: data.Country || null,
         district: data.District || null,
         region: data.Region || null,
-        payment_mode: data["Payment Mode"] || null,
         in_behalf_of: data["In Behalf Of"] || null,
         amount: data.Amount ? Number(data.Amount) : null,
-        id_proof_type: data["ID Proof Type"] || null,
-        id_proof_number: data["ID Proof Number"] || null,
         occasion: data.Occasion || null,
-        id_proof: data["ID Proof"] || null,
         paksham: data.Paksham || null,
         telugu_month: data["Telugu Month"] || null,
         tidi: data["Tidi"] || null,
@@ -59,7 +52,7 @@ export const manageMultipleDonations = async (request, response) => {
 
     let bulkOperations = preparedJsonData.map((data) => ({
       updateOne: {
-        filter: { booking_id: data.booking_id },
+        filter: { recept_no: data.recept_no },
         update: { $set: data },
         upsert: true, // Insert if not found
       },
@@ -256,9 +249,7 @@ export const downloadExcel = (request, response) => {
           "Performance Date": item.performance_date
             ? item.performance_date.toISOString().split("T")[0]
             : null,
-          "Transaction ID": item.transaction_id,
           "Recept No": item.recept_no,
-          "Booking ID": item.booking_id,
           "In Behalf Of": item.in_behalf_of,
           Amount: item.amount,
           "Booked On": item.booked_on
@@ -272,9 +263,6 @@ export const downloadExcel = (request, response) => {
           Region: item.region,
           District: item.district,
           Country: item.country,
-          "Payment Mode": item.payment_mode,
-          "ID Proof Type": item.id_proof_type,
-          "ID Proof Number": item.id_proof_number,
           Occasion: item.occasion,
           "ID Proof": item.id_proof,
           Paksham: item.paksham,
@@ -292,9 +280,7 @@ export const downloadExcel = (request, response) => {
           { wch: 30 }, // Address
           { wch: 25 }, // Donation
           { wch: 15 }, // Performance Date
-          { wch: 20 }, // Transaction ID
           { wch: 10 }, // Serial No
-          { wch: 15 }, // Booking ID
           { wch: 20 }, // In Behalf Of
           { wch: 10 }, // Amount
           { wch: 15 }, // Booked On
@@ -306,11 +292,7 @@ export const downloadExcel = (request, response) => {
           { wch: 15 }, // Region
           { wch: 15 }, // District
           { wch: 15 }, // Country
-          { wch: 15 }, // Payment Mode
-          { wch: 15 }, // ID Proof Type
-          { wch: 15 }, // ID Proof Number
           { wch: 15 }, // Occasion
-          { wch: 15 }, // ID Proof
           { wch: 15 }, // Paksham
           { wch: 15 }, // Telugu Month
           { wch: 15 }, // Tidi
